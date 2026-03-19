@@ -1,4 +1,22 @@
+# Secrets
 secrets/
 .env
-dbt/crypto_platform/logs/
+
+# Python
+__pycache__/
+*.pyc
+
+# Spark
+spark/work/
+
+# dbt
 dbt/crypto_platform/target/
+dbt/crypto_platform/logs/
+
+
+
+# Airflow
+airflow/logs/
+
+env/
+venv/

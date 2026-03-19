@@ -1,7 +1,6 @@
 import os
-import json
 import asyncio
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import bigquery
 from dotenv import load_dotenv
