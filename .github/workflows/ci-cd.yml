@@ -133,6 +133,11 @@ jobs:
             export BINANCE_WS_URL="${{ vars.BINANCE_WS_URL }}"
             export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-credentials.json
 
+            # Clone si pas déjà présent, sinon pull
+            if [ ! -d "/opt/crypto-platform" ]; then
+              git clone https://github.com/agutleben/crypto-platform.git /opt/crypto-platform
+            fi
+
             cd /opt/crypto-platform
             git pull origin main
 
