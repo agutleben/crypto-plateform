@@ -85,11 +85,6 @@ crypto-platform/
 │   ├── main.py
 │   ├── requirements.txt
 │   └── Dockerfile
-├── frontend/               # React dashboard
-│   └── src/
-│       ├── components/
-│       ├── hooks/
-│       └── types/
 ├── secrets/                # GCP credentials (gitignored)
 ├── docker-compose.yml
 └── .env
@@ -122,6 +117,10 @@ BQ_DATASET_MART=crypto_mart
 GCS_BUCKET=your-gcs-temp-bucket
 BQ_LOCATION=EU
 GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-credentials.json
+KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+KAFKA_TOPIC_RAW=crypto.raw.trades
+KAFKA_TOPIC_METRICS=crypto.metrics
+AIRFLOW_ADMIN_PASSWORD=password
 ```
 
 ### 2. Add GCP Credentials
@@ -160,16 +159,6 @@ docker exec airflow airflow users create \
   --firstname Admin --lastname Admin \
   --role Admin --email admin@crypto.com
 ```
-
-### 5. Start the Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Access the dashboard at **http://localhost:5173**
 
 ---
 
@@ -218,7 +207,7 @@ Computed by Spark every **30 seconds** over a **1-minute sliding window**:
 | `stg_trades` | `crypto_raw.trades` | Cleaned trades with computed `trade_value`, typed timestamps |
 | `stg_metrics` | `crypto_raw.metrics` | Cleaned metrics with rounded values and `price_range` |
 
-### Mart (Tables — refreshed every 15 min by Airflow)
+### Mart (Tables — refreshed every 5 min by Airflow)
 
 #### `mart_top_movers`
 
@@ -267,13 +256,13 @@ Volume distribution by hour of day and day of week:
 
 ## 🚨 Alert System
 
-Alerts are triggered by the `crypto_alerts` Airflow DAG, which runs **every 5 minutes**.
+Alerts are triggered by the `crypto_alerts` Airflow DAG, which runs **every 1 minutes**.
 
 ### Alert Conditions
 
 | Condition | Threshold | Description |
 |---|---|---|
-| **Price Spike** | `ABS(price_change_pct) > 0.5%` | Symbol moved more than 0.5% in the last 1-minute window |
+| **Price Spike** | `ABS(price_change_pct) > 0.5%` | Symbol moved more than 0.5% in the last 5-minute window |
 
 Alerts are visible in:
 - The **Alerts panel** in the React dashboard (live via WebSocket)
@@ -307,7 +296,7 @@ Base URL: `http://localhost:8000`
 | GET | `/ohlcv/{symbol}?limit=24` | Hourly OHLCV candles for a symbol |
 | GET | `/heatmap?symbol=BTCUSDT` | Volume heatmap data |
 | GET | `/alerts?threshold=0.5` | Active alerts above threshold % |
-| WS | `/ws/metrics` | WebSocket stream (pushes every 15s) |
+| WS | `/ws/metrics` | WebSocket stream (pushes every 5s) |
 
 ### WebSocket Payload
 
@@ -352,7 +341,7 @@ Base URL: `http://localhost:8000`
 
 ## 🔄 Airflow DAGs
 
-### `dbt_refresh_mart` — Every 15 minutes
+### `dbt_refresh_mart` — Every 5 minutes
 
 ```
 dbt_debug → dbt_run_staging → dbt_run_mart → dbt_test
