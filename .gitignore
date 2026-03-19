@@ -1,1 +1,4 @@
 secrets/
+.env
+dbt/crypto_platform/logs/
+dbt/crypto_platform/target/

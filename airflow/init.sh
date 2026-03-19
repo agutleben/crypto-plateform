@@ -7,7 +7,7 @@ airflow db init
 echo ">>> Création user admin..."
 airflow users create \
   --username admin \
-  --password admin \
+  --password "${AIRFLOW_ADMIN_PASSWORD}" \
   --firstname Admin \
   --lastname Admin \
   --role Admin \
