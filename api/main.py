@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-GCP_PROJECT    = os.getenv("GCP_PROJECT",    "crypto-platform-dev-490610")
-BQ_DATASET_MART = os.getenv("BQ_DATASET_MART", "crypto_mart")
+GCP_PROJECT    = os.getenv("GCP_PROJECT",)
+BQ_DATASET_MART = os.getenv("BQ_DATASET_MART")
 
 app = FastAPI(title="Crypto Analytics API", version="1.0.0")
 

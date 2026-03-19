@@ -142,7 +142,7 @@ jobs:
             git pull origin main
 
             mkdir -p /opt/crypto-platform/secrets
-            echo "${{ secrets.GCP_SA_KEY }}" > /opt/crypto-platform/secrets/gcp-credentials.json
+            echo "${{ secrets.GCP_SA_KEY }}" | base64 -d > /opt/crypto-platform/secrets/gcp-credentials.json
 
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
