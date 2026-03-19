@@ -121,6 +121,7 @@ services:
       GCP_PROJECT: ${GCP_PROJECT}
       BQ_DATASET_MART: ${BQ_DATASET_MART}
       GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp-credentials.json
+      BINANCE_WS_URL: ${BINANCE_WS_URL}
     volumes:
       - ./secrets/gcp-credentials.json:/tmp/gcp-credentials.json:ro
     restart: unless-stopped
