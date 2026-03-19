@@ -154,6 +154,7 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
       AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+      AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
     volumes:
       - ./dbt/crypto_platform:/opt/dbt-source:ro
       - dbt_data:/opt/airflow/dbt
@@ -176,6 +177,7 @@ services:
       BQ_DATASET_MART: ${BQ_DATASET_MART}
       BQ_LOCATION: ${BQ_LOCATION}
       GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp-credentials.json
+      AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - dbt_data:/opt/airflow/dbt
