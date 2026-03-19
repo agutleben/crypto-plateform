@@ -135,7 +135,7 @@ jobs:
 
             # Clone si pas déjà présent, sinon pull
             if [ ! -d "/opt/crypto-platform" ]; then
-              git clone https://github.com/agutleben/crypto-platform.git /opt/crypto-platform
+              git clone https://github.com/agutleben/crypto-plateform.git /opt/crypto-platform
             fi
 
             cd /opt/crypto-platform
