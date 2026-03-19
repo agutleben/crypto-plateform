@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 KAFKA_TOPIC = os.getenv("KAFKA_TOPIC_RAW", "crypto.raw.trades")
 
-# Paires à suivre
+# Trading pairs to track
 SYMBOLS = [
     "btcusdt", "ethusdt", "bnbusdt",
     "solusdt", "xrpusdt", "dogeusdt",
@@ -46,7 +46,7 @@ def create_producer() -> KafkaProducer:
 # ── Message parser ────────────────────────────────────────────────
 def parse_trade(raw: dict) -> dict:
     """
-    Binance trade stream payload :
+    Binance trade stream payload:
     {
       "e": "trade", "E": 123456789,  # event time
       "s": "BTCUSDT",                # symbol
@@ -58,20 +58,20 @@ def parse_trade(raw: dict) -> dict:
     """
     data = raw["data"]
     return {
-        "symbol":     data["s"],
-        "price":      float(data["p"]),
-        "quantity":   float(data["q"]),
-        "trade_time": data["T"],
-        "event_time": data["E"],
+        "symbol":               data["s"],
+        "price":                float(data["p"]),
+        "quantity":             float(data["q"]),
+        "trade_time":           data["T"],
+        "event_time":           data["E"],
         "is_buyer_market_maker": data["m"],
-        "ingested_at": datetime.utcnow().isoformat(),
+        "ingested_at":          datetime.utcnow().isoformat(),
     }
 
 
 # ── Main loop ─────────────────────────────────────────────────────
 async def consume(producer: KafkaProducer):
-    logger.info(f"Connexion à Binance WebSocket — {len(SYMBOLS)} symboles")
-    logger.info(f"Topic Kafka cible : {KAFKA_TOPIC}")
+    logger.info(f"Connecting to Binance WebSocket — {len(SYMBOLS)} symbols")
+    logger.info(f"Target Kafka topic: {KAFKA_TOPIC}")
 
     async for websocket in websockets.connect(BINANCE_WS_URL, ping_interval=20):
         try:
@@ -92,21 +92,21 @@ async def consume(producer: KafkaProducer):
                 )
 
         except websockets.ConnectionClosed:
-            logger.warning("WebSocket déconnecté, reconnexion...")
+            logger.warning("WebSocket disconnected, reconnecting...")
             continue
         except Exception as e:
-            logger.error(f"Erreur inattendue : {e}")
+            logger.error(f"Unexpected error: {e}")
             await asyncio.sleep(2)
             continue
 
 
 def main():
     producer = create_producer()
-    logger.info("KafkaProducer initialisé")
+    logger.info("KafkaProducer initialized")
     try:
         asyncio.run(consume(producer))
     except KeyboardInterrupt:
-        logger.info("Arrêt du producer")
+        logger.info("Producer stopped")
     finally:
         producer.flush()
         producer.close()

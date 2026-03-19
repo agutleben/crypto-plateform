@@ -5,8 +5,8 @@ from airflow.utils.dates import days_ago
 from google.cloud import bigquery
 import os
 
-GCP_PROJECT    = os.getenv("GCP_PROJECT",    "crypto-platform-dev-490610")
-BQ_DATASET_MART= os.getenv("BQ_DATASET_MART","crypto_mart")
+GCP_PROJECT = os.getenv("GCP_PROJECT")
+BQ_DATASET_MART = os.getenv("BQ_DATASET_MART")
 
 default_args = {
     "owner":            "crypto-platform",
@@ -17,7 +17,7 @@ default_args = {
 
 
 def check_spikes(**context):
-    """Détecte les variations > 0.5% sur les 15 dernières minutes."""
+    """Detects price spikes > 0.5% over the last 5-minute window."""
     client = bigquery.Client(project=GCP_PROJECT)
 
     query = f"""
@@ -45,20 +45,20 @@ def check_spikes(**context):
         print(f"🚨 SPIKE DETECTED: {row.symbol} {row.price_change_pct:+.4f}% @ {row.vwap:.4f}")
 
     context["task_instance"].xcom_push(key="alerts", value=alerts)
-    return f"{len(alerts)} alertes détectées"
+    return f"{len(alerts)} alerts detected"
 
 
 def log_alerts(**context):
-    """Log les alertes — extensible vers Slack/email."""
+    """Logs alerts — extensible to Slack/email notifications."""
     alerts = context["task_instance"].xcom_pull(
         task_ids="check_spikes",
         key="alerts"
     )
     if not alerts:
-        print("✅ Aucune variation significative détectée")
+        print("✅ No significant price movement detected")
         return
 
-    print(f"📊 Rapport d'alertes — {len(alerts)} symboles en mouvement :")
+    print(f"📊 Alert report — {len(alerts)} symbols moving:")
     for alert in alerts:
         direction = "📈" if alert["price_change_pct"] > 0 else "📉"
         print(
@@ -70,7 +70,7 @@ def log_alerts(**context):
 
 with DAG(
     dag_id="crypto_alerts",
-    description="Détecte les spikes de prix toutes les 5 minutes",
+    description="Detects price spikes every minute",
     default_args=default_args,
     schedule_interval="*/1 * * * *",
     start_date=days_ago(1),

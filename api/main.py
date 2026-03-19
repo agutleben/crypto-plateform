@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-GCP_PROJECT    = os.getenv("GCP_PROJECT",)
+GCP_PROJECT = os.getenv("GCP_PROJECT")
 BQ_DATASET_MART = os.getenv("BQ_DATASET_MART")
 
 app = FastAPI(title="Crypto Analytics API", version="1.0.0")
@@ -35,18 +35,18 @@ def health():
 
 @app.get("/top-movers")
 def top_movers(limit: int = 10):
-    """Retourne les cryptos avec les plus fortes variations."""
+    """Returns top movers ranked by absolute price change."""
     sql = f"""
         SELECT
             symbol,
-            ROUND(vwap, 4)             AS vwap,
-            ROUND(volume, 4)           AS volume,
+            ROUND(vwap, 4)               AS vwap,
+            ROUND(volume, 4)             AS volume,
             trade_count,
-            ROUND(price_change_pct, 4) AS price_change_pct,
-            ROUND(price_min, 4)        AS price_min,
-            ROUND(price_max, 4)        AS price_max,
+            ROUND(price_change_pct, 4)   AS price_change_pct,
+            ROUND(price_min, 4)          AS price_min,
+            ROUND(price_max, 4)          AS price_max,
             direction,
-            ROUND(abs_change_pct, 4)   AS abs_change_pct,
+            ROUND(abs_change_pct, 4)     AS abs_change_pct,
             CAST(window_start AS STRING) AS window_start,
             CAST(window_end   AS STRING) AS window_end
         FROM `{GCP_PROJECT}.{BQ_DATASET_MART}.mart_top_movers`
@@ -58,17 +58,17 @@ def top_movers(limit: int = 10):
 
 @app.get("/ohlcv/{symbol}")
 def ohlcv(symbol: str, limit: int = 24):
-    """Retourne les bougies OHLCV 1h pour un symbole."""
+    """Returns hourly OHLCV candles for a given symbol."""
     sql = f"""
         SELECT
             symbol,
-            CAST(hour AS STRING)       AS hour,
+            CAST(hour AS STRING) AS hour,
             trade_count,
-            ROUND(volume, 6)           AS volume,
-            ROUND(turnover, 6)         AS turnover,
-            ROUND(low, 6)              AS low,
-            ROUND(high, 6)             AS high,
-            ROUND(vwap, 6)             AS vwap
+            ROUND(volume, 6)     AS volume,
+            ROUND(turnover, 6)   AS turnover,
+            ROUND(low, 6)        AS low,
+            ROUND(high, 6)       AS high,
+            ROUND(vwap, 6)       AS vwap
         FROM `{GCP_PROJECT}.{BQ_DATASET_MART}.mart_ohlcv_1h`
         WHERE symbol = '{symbol.upper()}'
         ORDER BY hour DESC
@@ -79,7 +79,7 @@ def ohlcv(symbol: str, limit: int = 24):
 
 @app.get("/heatmap")
 def heatmap(symbol: str = None):
-    """Retourne les données de heatmap volume par heure/jour."""
+    """Returns volume heatmap data by hour of day and day of week."""
     where = f"WHERE symbol = '{symbol.upper()}'" if symbol else ""
     sql = f"""
         SELECT
@@ -98,7 +98,7 @@ def heatmap(symbol: str = None):
 
 @app.get("/alerts")
 def alerts(threshold: float = 0.5):
-    """Retourne les symboles avec variation > threshold%."""
+    """Returns symbols with price change greater than threshold %."""
     sql = f"""
         SELECT
             symbol,
@@ -115,13 +115,14 @@ def alerts(threshold: float = 0.5):
 
 @app.get("/symbols")
 def symbols():
-    """Retourne la liste des symboles disponibles."""
+    """Returns the list of available trading pairs."""
     sql = f"""
         SELECT DISTINCT symbol
         FROM `{GCP_PROJECT}.{BQ_DATASET_MART}.mart_top_movers`
         ORDER BY symbol
     """
     return [row["symbol"] for row in run_query(sql)]
+
 
 # ── WebSocket Manager ─────────────────────────────────────────────
 class ConnectionManager:
@@ -142,15 +143,16 @@ class ConnectionManager:
             except Exception:
                 self.active.remove(ws)
 
+
 manager = ConnectionManager()
 
 
 @app.websocket("/ws/metrics")
 async def ws_metrics(websocket: WebSocket):
+    """WebSocket endpoint — pushes top movers and alerts every 5 seconds."""
     await manager.connect(websocket)
     try:
         while True:
-            # Push toutes les 15 secondes
             data = {
                 "top_movers": run_query(f"""
                     SELECT symbol, ROUND(vwap,4) AS vwap,
@@ -171,6 +173,6 @@ async def ws_metrics(websocket: WebSocket):
                 """),
             }
             await websocket.send_json(data)
-            await asyncio.sleep(15)
+            await asyncio.sleep(5)
     except WebSocketDisconnect:
         manager.disconnect(websocket)

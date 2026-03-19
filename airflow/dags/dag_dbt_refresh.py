@@ -1,12 +1,12 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.utils.dates import days_ago
 import os
 
-GCP_PROJECT     = os.getenv("GCP_PROJECT",     "crypto-platform-dev-490610")
-BQ_DATASET_RAW  = os.getenv("BQ_DATASET_RAW",  "crypto_raw")
-BQ_DATASET_MART = os.getenv("BQ_DATASET_MART", "crypto_mart")
+GCP_PROJECT = os.getenv("GCP_PROJECT")
+BQ_DATASET_RAW  = os.getenv("BQ_DATASET_RAW")
+BQ_DATASET_MART = os.getenv("BQ_DATASET_MART")
 
 DBT_BIN      = "/home/airflow/.local/bin/dbt"
 DBT_DIR      = "/opt/airflow/dbt"
@@ -21,7 +21,7 @@ default_args = {
 
 with DAG(
     dag_id="dbt_refresh_mart",
-    description="Rafraîchit les modèles dbt toutes les 15 minutes",
+    description="Refreshes dbt mart models every 5 minutes",
     default_args=default_args,
     schedule_interval="*/5 * * * *",
     start_date=days_ago(1),
