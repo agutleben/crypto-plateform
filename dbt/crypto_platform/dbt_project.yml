@@ -1,0 +1,21 @@
+name: crypto_platform
+version: '1.0.0'
+config-version: 2
+
+profile: crypto_platform
+
+model-paths: ["models"]
+test-paths: ["tests"]
+
+vars:
+  gcp_project: "{{ env_var('GCP_PROJECT') }}"
+  bq_dataset_raw: "{{ env_var('BQ_DATASET_RAW') }}"
+  bq_dataset_mart: "{{ env_var('BQ_DATASET_MART') }}"
+  bq_location: "{{ env_var('BQ_LOCATION') }}"
+
+models:
+  crypto_platform:
+    staging:
+      materialized: view
+    mart:
+      materialized: table

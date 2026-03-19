@@ -1,0 +1,12 @@
+crypto_platform:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: "{{ env_var('GCP_PROJECT') }}"
+      dataset: "{{ env_var('BQ_DATASET_MART') }}"
+      keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS') }}"
+      location: "{{ env_var('BQ_LOCATION') }}"
+      timeout_seconds: 300
+      threads: 4
